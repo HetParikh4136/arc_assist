@@ -1,13 +1,15 @@
+1. Clone the repository
+   ```
    git clone https://github.com/HetParikh4136/arc_assist.git
    cd arc_assist
    ```
 
-2. Install dependencies:
+3. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
 
-3. Configure environment variables:
+4. Configure environment variables:
    Create a `.env` file in the project root with the following required variable:
    ```
    PORCUPINE_ACCESS_KEY=your_api_key_from_https://console.picovoice.ai
@@ -100,3 +102,6 @@ If you need to modify advanced behavior (not recommended without understanding t
 - **[audio/stream.py](audio/stream.py)**: Audio stream management and PCM processing
 - **[launcher/controller.py](launcher/controller.py)**: Main control loop orchestrating wake/clap detection and actions
 - **[launcher/app_launcher.py](launcher/app_launcher.py)**: Application launching logic for each OS (Windows, macOS, Linux)
+
+
+!!! INSPIRED BY https://github.com/TPAteeq/wake-up !!!
