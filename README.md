@@ -8,6 +8,8 @@
    ```bash
    pip install -r requirements.txt
    ```
+   
+   Note: Requires internet connection for voice command recognition via Google Speech API.
 
 4. Configure environment variables:
    Create a `.env` file in the project root with the following required variable:
@@ -29,6 +31,22 @@
    BRAVE_PATH=brave
    CHROME_URL=https://claude.ai
    GITHUB_URL=https://github.com/HetParikh4136
+   
+   # Q&A Configuration (Optional - for voice questions)
+   # Use OpenRouter (many free models): https://openrouter.ai/keys
+   LLM_API_KEY=your_openrouter_api_key
+   LLM_API_BASE=https://openrouter.ai/api/v1
+   LLM_MODEL=mistralai/mistral-7b-instruct:free
+   # Fallback models (comma-separated). Used automatically if the primary model errors.
+   LLM_FALLBACK_MODELS=meta-llama/llama-3.1-8b-instruct:free,google/gemini-flash-1.5:free
+   
+   # Other popular free models on OpenRouter:
+   # LLM_MODEL=qwen/qwen-2-7b-instruct:free
+   # LLM_FALLBACK_MODELS=deepseek/deepseek-r1:free
+   
+   # Or use OpenAI/Groq:
+   # LLM_API_BASE=https://api.openai.com/v1
+   # LLM_MODEL=gpt-4o-mini
    ```
 
 ## Usage
@@ -38,6 +56,19 @@ Run the main script to initiate the wake-up assistant:
 ```bash
 python main.py
 ```
+
+### Voice Commands
+
+1. Say **"Hey Arc"** (or your configured wake word) to activate the assistant
+2. Say **"the usual"** to launch your configured apps
+3. **Ask any question** - Arc will answer using AI and speak the response
+   - Examples: "What's the weather like?", "Tell me a joke", "Explain quantum physics"
+4. Alternatively, you can still use **double clap** after the wake word as a backup
+
+### Legacy Clap Controls (Backup)
+
+- **Double Clap** after wake word: Launches configured applications
+- **Triple Clap**: Disabled (URL functionality commented out)
 
 Optional debug logging:
 
@@ -59,18 +90,29 @@ All settings are configured via environment variables in the `.env` file:
 - `CLAP_THRESHOLD`: Sensitivity for clap detection, range 1000-3000 (default: 1800). Higher values = less sensitive.
 - `CLAP_INTERVAL`: Time window in seconds for multi-clap detection (default: 0.7).
 - `ACTIVE_DURATION`: How long the assistant stays active after a wake event in seconds (default: 5).
-- `TRIPLE_WAIT_DURATION`: Cooldown time in seconds after a triple-clap (default: 30).
+- `TRIPLE_WAIT_DURATION`: ~~Cooldown time in seconds after a triple-clap~~ (currently disabled) (default: 30).
 
 ### Application Launcher Configuration
 - `VS_CODE_PATH`: Path to VS Code executable (default: `code`).
 - `SPOTIFY_PATH`: Path to Spotify executable (leave empty to disable).
 - `DISCORD_PATH`: Path to Discord executable (leave empty to disable).
-- `BRAVE_PATH`: Path to Brave browser executable (default: `brave`).
-- `CHROME_URL`: URL to open on double-clap (default: `https://claude.ai`).
-- `GITHUB_URL`: URL to open on triple-clap (default: `https://github.com/HetParikh4136`).
+- `BRAVE_PATH`: Path to Brave browser executable.
+- `CHROME_URL`: URL to open on voice command "the usual" (default: `https://claude.ai`).
+- `GITHUB_URL`: ~~URL to open on triple-clap~~ (currently disabled) (default: `https://github.com/HetParikh4136`).
 
 ### Debug Mode
 - `DEBUG`: Enable debug logging (default: `false`). Set to `true` for verbose output, or use `python main.py --debug`.
+
+### Q&A Configuration (Optional)
+- `LLM_API_KEY`: API key for LLM service (OpenRouter has many free models at https://openrouter.ai/keys)
+- `LLM_API_BASE`: API endpoint (default: `https://openrouter.ai/api/v1`)
+- `LLM_MODEL`: Primary model to use (default: `tngtech/deepseek-r1t2-chimera:free`)
+- `LLM_FALLBACK_MODELS`: Comma-separated fallback models to try if the primary model fails (default: `nvidia/nemotron-3-nano-30b-a3b:free,arcee-ai/trinity-mini:free,arcee-ai/trinity-large-preview:free,openrouter/free`)
+  - **Fallback Behavior**: If the primary model times out, returns empty/invalid JSON, or errors, the system automatically tries each fallback model in order until one succeeds
+  - Free models on OpenRouter: https://openrouter.ai/models?q=free
+  - Or use OpenAI/Groq by changing the API base and model
+
+**Note**: Q&A functionality is completely optional. If not configured, you can still use "the usual" command and clap controls.
 
 ## Tweakables Reference
 
@@ -83,14 +125,18 @@ Complete list of all configurable settings and where to find them:
 | **Clap Threshold** | `CLAP_THRESHOLD` | `1800` | integer | [config.py](config.py#L52) | Audio amplitude threshold for clap detection (1000-3000) |
 | **Clap Interval** | `CLAP_INTERVAL` | `0.7` | float (seconds) | [config.py](config.py#L55) | Time window for detecting multi-clap sequences |
 | **Active Duration** | `ACTIVE_DURATION` | `5` | integer (seconds) | [config.py](config.py#L53) | How long assistant stays active after wake word |
-| **Triple Clap Cooldown** | `TRIPLE_WAIT_DURATION` | `30` | integer (seconds) | [config.py](config.py#L54) | Cooldown after triple-clap before listening again |
+| **Triple Clap Cooldown** | `TRIPLE_WAIT_DURATION` | `30` | integer (seconds) | [config.py](config.py#L54) | ~~Cooldown after triple-clap~~ (currently disabled) |
 | **Debug Mode** | `DEBUG` | `false` | boolean | [config.py](config.py#L58) | Enable verbose debug logging |
 | **VS Code Path** | `VS_CODE_PATH` | `code` | string (executable) | [launcher/app_launcher.py](launcher/app_launcher.py#L28) | Command to launch VS Code |
 | **Spotify Path** | `SPOTIFY_PATH` | (empty) | string (executable) | [launcher/app_launcher.py](launcher/app_launcher.py#L29) | Path to Spotify executable |
 | **Discord Path** | `DISCORD_PATH` | (empty) | string (executable) | [launcher/app_launcher.py](launcher/app_launcher.py#L30) | Path to Discord executable |
 | **Brave Browser Path** | `BRAVE_PATH` | `brave` | string (executable) | [launcher/app_launcher.py](launcher/app_launcher.py#L31) | Command to launch Brave browser |
-| **Double-Clap URL** | `CHROME_URL` | `https://claude.ai` | string (URL) | [launcher/app_launcher.py](launcher/app_launcher.py#L32) | URL opened on double-clap |
-| **Triple-Clap URL** | `GITHUB_URL` | `https://github.com/HetParikh4136` | string (URL) | [launcher/app_launcher.py](launcher/app_launcher.py#L33) | URL opened on triple-clap |
+| **Voice Command URL** | `CHROME_URL` | `https://claude.ai` | string (URL) | [launcher/app_launcher.py](launcher/app_launcher.py#L32) | URL opened on voice command "the usual" |
+| **Triple-Clap URL** | `GITHUB_URL` | `https://github.com/HetParikh4136` | string (URL) | [launcher/app_launcher.py](launcher/app_launcher.py#L33) | ~~URL opened on triple-clap~~ (currently disabled) |
+| **LLM API Key** | `LLM_API_KEY` | (optional) | string | [utils/qa_handler.py](utils/qa_handler.py#L9) | API key for Q&A feature |
+| **LLM API Base** | `LLM_API_BASE` | `https://openrouter.ai/api/v1` | string (URL) | [utils/qa_handler.py](utils/qa_handler.py#L10) | LLM API endpoint |
+| **LLM Model** | `LLM_MODEL` | `tngtech/deepseek-r1t2-chimera:free` | string | [utils/qa_handler.py](utils/qa_handler.py#L11) | Primary model for Q&A |
+| **LLM Fallback Models** | `LLM_FALLBACK_MODELS` | `model1,model2,model3,...` | string (comma-separated) | [utils/qa_handler.py](utils/qa_handler.py#L12) | Fallback models tried on error |
 
 ### Core Implementation Files
 

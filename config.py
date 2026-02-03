@@ -56,3 +56,17 @@ CLAP_INTERVAL = float(os.getenv("CLAP_INTERVAL", "0.7"))
 
 # Debug mode
 DEBUG = os.getenv("DEBUG", "false").lower() == "true"
+
+# LLM Configuration for Q&A (Optional)
+# Default: OpenRouter with free Llama 3.1 8B model
+# To enable: Set LLM_API_KEY in your .env file
+# Get your key from: https://openrouter.ai/keys
+#
+# Example .env configuration:
+# LLM_API_KEY=your_openrouter_api_key
+# (API_BASE and MODEL default to OpenRouter's Llama 3.1 8B)
+#
+# To use a different provider/model:
+# LLM_API_BASE=https://api.openai.com/v1  (for OpenAI)
+# LLM_MODEL=gpt-4o-mini  (for OpenAI)
+# Or any OpenAI-compatible API endpoint
